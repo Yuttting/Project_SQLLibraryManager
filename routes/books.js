@@ -9,14 +9,11 @@ function asyncHandler(cb) {
             await cb(req, res, next);
         } catch(error) {
             res.statur(500).send(error);
+            console.log("Error: ", error);
         }
     }
-}
+};
 
-//get / - Home route should redirect to the /books route.
-router.get('/', (req, res, next) => {
-    res.redirect('/books')
-});
 
 //get /books - Shows the full list of books.
 router.get('/books', asyncHandler(async(req, res) => {
@@ -26,12 +23,66 @@ router.get('/books', asyncHandler(async(req, res) => {
 
 //get /books/new - Shows the create new book form.
 router.get('/books/new', (req, res) => {
-    render('books/new', { book: {}, title: "New Book"});
-})
+    render('books/new-book', { book: {}, title: "New Book"});
+});
 
 //post /books/new - Posts a new book to the database.
-router.post()
+router.post('/', asyncHandler(async (req, res) => {
+    let book;
+    try {
+        book = await Book.create(req.body);
+        res.redirect('/books/' + book.id);
+    } catch(error) {
+        if(error.name === "SequelizeValidationError") {
+            book = await Book.build(req.body);
+            res.render("books/new-book", {book, errors: error.errors, title: "New Book"})
+        } else {
+            throw error;
+        }
+    }
+}));
 
 //get /books/:id - Shows book detail form.
+router.get('/books/:id', asyncHandler(async (req, res) => {
+    const book = await Book.findByPk(req.params.id);
+    if(book) {
+        res.render("books/update-book", {book, title: book.title})
+    } else {
+        res.sendStatus(404);
+    }
+}));
+
 //post /books/:id - Updates book info in the database.
-//post /books/:id/delete - Deletes a book. Careful, this can’t be undone. It can be helpful to create a new “test” book to test deleting.
+router.post('/books/:id/edit', asyncHandler(async (req,res) => {
+    let book;
+    try {
+        book = await Book.findByPk(req.params.id);
+        if(book) {
+            await book.update(req.body);
+            res.redirect("/books/" + book.id);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch(error) {
+        if(error.name === "SequelizeValidationError") {
+            book = await Book.build(req.body);
+            book.id = req.params.id;
+            res.render("books/edit", {book, errors:error.errors, title: "Edit Book"});
+        } else {
+            throw error;
+        }
+    }
+}));
+
+//post /books/:id/delete - Deletes a book. Careful, this can’t be undone. 
+router.post('/books/:id/delete', asyncHandler(async (req, res) => {
+    const book = await Book.findByPk(req.params.id);
+    if(book) {
+        await book.destroy();
+        res.redirect("/books");
+    } else {
+        res.sendStatus(404);
+    }
+}))
+
+module.exports = router;
