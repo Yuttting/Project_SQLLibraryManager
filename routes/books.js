@@ -17,7 +17,7 @@ function asyncHandler(cb) {
 
 //get /books - Shows the full list of books.
 router.get('/', asyncHandler(async(req, res) => {
-    const books = await Book.findAll({ order: [["createdAt", "DESC"]] });
+    const books = await Book.findAll({ order: [["year", "DESC"]] });
     res.render("books/index", { books, title: "Books" });
 }));
 
@@ -31,7 +31,7 @@ router.post('/', asyncHandler(async (req, res) => {
     let book;
     try {
         book = await Book.create(req.body);
-        res.redirect('/books/' + book.id);
+        res.redirect('/books');
     } catch(error) {
         if(error.name === "SequelizeValidationError") {
             book = await Book.build(req.body);
@@ -48,26 +48,26 @@ router.get('/:id', asyncHandler(async (req, res) => {
     if(book) {
         res.render("books/update-book", {book, title: book.title})
     } else {
-        res.sendStatus(404);
+        res.render("page-not-found.pug");
     }
 }));
 
 //post /books/:id - Updates book info in the database.
-router.post('/:id/edit', asyncHandler(async (req,res) => {
+router.post('/:id', asyncHandler(async (req,res) => {
     let book;
     try {
         book = await Book.findByPk(req.params.id);
         if(book) {
             await book.update(req.body);
-            res.redirect("/books/" + book.id);
+            res.redirect("/books");
         } else {
-            res.sendStatus(404);
+            res.render("page-not-found.pug");
         }
     } catch(error) {
         if(error.name === "SequelizeValidationError") {
             book = await Book.build(req.body);
             book.id = req.params.id;
-            res.render("books/edit", {book, errors:error.errors, title: "Edit Book"});
+            res.render("books/update-book", {book, errors:error.errors, title: "Edit Book"});
         } else {
             throw error;
         }
@@ -81,7 +81,7 @@ router.post('/:id/delete', asyncHandler(async (req, res) => {
         await book.destroy();
         res.redirect("/books");
     } else {
-        res.sendStatus(404);
+        res.render("page-not-found.pug");
     }
 }))
 
