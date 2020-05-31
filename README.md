@@ -6,5 +6,3 @@
 
  - npm start
  to launch the web application 
-
-
