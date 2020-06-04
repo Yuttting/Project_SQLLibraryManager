@@ -48,11 +48,11 @@ router.post('/', asyncHandler(async (req, res) => {
 //get /books/:id - Shows book detail form.
 router.get('/:id', asyncHandler(async (req, res) => {
     const book = await Book.findByPk(req.params.id);
-    if(book) {
-        res.render("books/update-book", {book, title: book.title})
-    } else {
-        res.render('error');
-    }
+    // if(book) {
+    res.render("books/update-book", {book, title: book.title})
+    // } else {
+    //     res.render('error');
+    // }
 }));
 
 //post /books/:id - Updates book info in the database.
@@ -60,13 +60,13 @@ router.post('/:id', asyncHandler(async (req,res) => {
     let book;
     try {
         book = await Book.findByPk(req.params.id);
-        if(book) {
-            await book.update(req.body);
-            res.redirect("/books");
+        // if(book) {
+        await book.update(req.body);
+        res.redirect("/books");
             //res.redirect("/books/" + book.id);
-        } else {
-            res.render('error');
-        }
+        // } else {
+        //     res.render('error');
+        // }
     } catch(error) {
         if(error.name === "SequelizeValidationError") {
             book = await Book.build(req.body);
