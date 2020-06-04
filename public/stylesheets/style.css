@@ -22,6 +22,20 @@ a.button, input[type=submit] {
   font-size: 14px;
   border-radius: 2px;
   cursor: pointer;
+  margin: 10px 10px 0px;
+}
+
+.search {
+  color: white;
+  background: #019875;
+  font-family: "Lucida Grande", Helvetica, Arial, sans-serif;
+  padding: 10px 14px 12px;
+  margin: 10px;
+  font-size: 14px;
+  border-radius: 2px;
+  cursor: pointer;
+  border:none;
+  display: inline;
 }
 
 form a.button, input[type=submit] {

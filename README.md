@@ -6,3 +6,5 @@
 
  - npm start
  to launch the web application 
+
+ - go to http://localhost:3000/

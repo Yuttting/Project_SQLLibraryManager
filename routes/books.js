@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Book = require('../models').Book;
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
+
 
 // Handler function to wrap each route.
 function asyncHandler(cb) {
@@ -8,8 +11,7 @@ function asyncHandler(cb) {
         try {
             await cb(req, res, next);
         } catch(error) {
-            res.statur(500).send(error);
-            console.log("Error: ", error);
+            res.render('error');
         }
     }
 };
@@ -18,7 +20,8 @@ function asyncHandler(cb) {
 //get /books - Shows the full list of books.
 router.get('/', asyncHandler(async(req, res) => {
     const books = await Book.findAll({ order: [["year", "DESC"]] });
-    res.render("books/index", { books, title: "Books" });
+    res.render("books/index", { books:books, title: "Books" });
+
 }));
 
 //get /books/new - Shows the create new book form.
@@ -37,7 +40,7 @@ router.post('/', asyncHandler(async (req, res) => {
             book = await Book.build(req.body);
             res.render("books/new-book", {book, errors: error.errors, title: "New Book"})
         } else {
-            throw error;
+            res.render('error');
         }
     }
 }));
@@ -48,7 +51,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
     if(book) {
         res.render("books/update-book", {book, title: book.title})
     } else {
-        res.render("page-not-found.pug");
+        res.render('error');
     }
 }));
 
@@ -60,8 +63,9 @@ router.post('/:id', asyncHandler(async (req,res) => {
         if(book) {
             await book.update(req.body);
             res.redirect("/books");
+            //res.redirect("/books/" + book.id);
         } else {
-            res.render("page-not-found.pug");
+            res.render('error');
         }
     } catch(error) {
         if(error.name === "SequelizeValidationError") {
@@ -69,7 +73,7 @@ router.post('/:id', asyncHandler(async (req,res) => {
             book.id = req.params.id;
             res.render("books/update-book", {book, errors:error.errors, title: "Edit Book"});
         } else {
-            throw error;
+            res.render('error');
         }
     }
 }));
@@ -81,8 +85,9 @@ router.post('/:id/delete', asyncHandler(async (req, res) => {
         await book.destroy();
         res.redirect("/books");
     } else {
-        res.render("page-not-found.pug");
+        res.render('error');
     }
 }))
+
 
 module.exports = router;
